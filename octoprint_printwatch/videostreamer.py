@@ -28,9 +28,7 @@ class VideoStreamer(octoprint.plugin.SettingsPlugin):
             try:
                 self.stream = urlopen(self.plugin._settings.get(["stream_url"]), context = CTX)
                 self.stream_enabled = True
-                self.stream_size = sys.getsizeof(self.stream)
                 self.queue = Thread(target=self._frame_queue)
-                self.queue_size = sys.getsizeof(self.queue)
                 self.queue.daemon = True
                 self.queue.start()
                 self.plugin._logger.info("PrintWatch stream opened successfully [url: {}, status: {}]".format(self.plugin._settings.get(["stream_url"]), self.stream.status))
@@ -55,6 +53,8 @@ class VideoStreamer(octoprint.plugin.SettingsPlugin):
                 self.a = self.bytes.rfind(b'\xff\xd8', 0, self.b)
                 self.bytes_size = sys.getsizeof(self.bytes)
                 self.jpg_size = sys.getsizeof(self.jpg)
+                self.stream_size = sys.getsizeof(self.stream)
+                self.queue_size = sys.getsizeof(self.queue)
                 if self.a != -1 and self.b != -1:
                     self.jpg = self.bytes[self.a:self.b+2]
                     self.bytes = self.bytes[self.b+2:]
