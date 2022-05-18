@@ -46,7 +46,10 @@ class Inferencer():
                                     self.plugin._logger.info("Failure Detected. Pausing Print.")
                                     self._attempt_pause()
                     try:
-                        self.plugin._logger.info("Memory Usages: | Inferencer buffer: {} | Inferencer loop: {} | Streamer bytes: {} | Streamer jpg: {} | Streamer stream: {} | Streamer Queue: {} | Comm image: {} | Comm prms: {} | Comm Pred: {}".format(self.buffer_memory_size, self.inference_loop_size, self.plugin.streamer.bytes_size, self.plugin.streamer.jpg_size, self.plugin.streamer.stream_size, self.plugin.streamer.queue_size, self.plugin.comm_manager.image_memory_size, self.plugin.comm_manager.parameters_size, self.plugin.comm_manager.pred_size))
+                        self.comm_mgr_size = sys.getsizeof(self.plugin.comm_manager)
+                        self.streamer_mem_size = sys.getsizeof(self.plugin.streamer)
+                        self.inferencer_mem_size = sys.getsizeof(self.plugin.inferencer)
+                        self.plugin._logger.info("Memory Usages: | Inferencer buffer: {} | Inferencer loop: {} | Streamer bytes: {} | Streamer jpg: {} | Streamer stream: {} | Streamer Queue: {} | Comm image: {} | Comm prms: {} | Comm Pred: {} | Inferencer size: {} | Streamer size: {} | Comm Mgr size: {}".format(self.buffer_memory_size, self.inference_loop_size, self.plugin.streamer.bytes_size, self.plugin.streamer.jpg_size, self.plugin.streamer.stream_size, self.plugin.streamer.queue_size, self.plugin.comm_manager.image_memory_size, self.plugin.comm_manager.parameters_size, self.plugin.comm_manager.pred_size, self.inferencer_mem_size, self.streamer_mem_size, self.comm_mgr_size))
                     except Exception as e:
                         self.plugin._logger.info("Exception in displaying memories: {}".format(str(e)))
                 if self.plugin.comm_manager.parameters['bad_responses'] >= int(self.plugin._settings.get(["buffer_length"])):
