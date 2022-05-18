@@ -1,8 +1,10 @@
 from threading import Thread
 from time import time, sleep
 import sys
+from memory_profiler import profiler
 
 class Inferencer():
+    @profile
     def __init__(self, plugin):
         self.plugin = plugin
         self.circular_buffer = []
@@ -12,7 +14,7 @@ class Inferencer():
         self.REQUEST_INTERVAL = 10.0
         self.inference_loop = None
 
-
+    @profile
     def _buffer_check(self):
         if self.pred:
             self.circular_buffer.append([True, time()])
@@ -22,12 +24,12 @@ class Inferencer():
         while len(self.circular_buffer) > int(self.plugin._settings.get(["buffer_length"])):
             self.circular_buffer.pop(0)
         self.buffer_memory_size = sys.getsizeof(self.circular_buffer)
-
+    @profile
     def _attempt_pause(self):
         self.plugin._printer.pause_print()
         self.triggered = True
         self.plugin._logger.info("Print Pause command sent.")
-
+    @profile
     def _inferencing(self):
         self.plugin._logger.info("PrintWatch Inference Loop starting...")
         while self.run_thread and self.plugin._settings.get(["enable_detector"]):
@@ -56,7 +58,7 @@ class Inferencer():
                     self.plugin._logger.info("Too many bad response from server. Disabling PrintWatch monitoring")
                     self.plugin.streamer.kill_service()
                     self.kill_service()
-
+    @profile
     def start_service(self):
         self.triggered = False
         if self.plugin._settings.get(["enable_detector"]):
@@ -67,7 +69,7 @@ class Inferencer():
                 self.inference_loop.start()
                 self.plugin._logger.info("PrintWatch inference service started")
                 self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, dict(type="icon", icon='plugin/printwatch/static/img/printwatch-green.gif'))
-
+    @profile
     def kill_service(self):
         self.run_thread = False
         self.inference_loop = None
@@ -78,7 +80,7 @@ class Inferencer():
         self.plugin.comm_manager.parameters['nms'] = False
         self.plugin._logger.info("PrintWatch inference service terminated")
         self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, dict(type="icon", icon='plugin/printwatch/static/img/printwatch-grey.png'))
-
+    @profile
     def shutoff_event(self):
         self.plugin.controller.shutoff_actions()
         if self.triggered:
