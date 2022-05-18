@@ -4,6 +4,7 @@ from urllib.request import urlopen
 import ssl
 from time import sleep
 import sys
+from memory_profiler import profile
 
 CTX = ssl.create_default_context()
 CTX.check_hostname = False
@@ -22,7 +23,7 @@ class VideoStreamer(octoprint.plugin.SettingsPlugin):
         self.queue = None
         self.jpg = None
 
-
+    @profile
     def start_service(self):
         if self.stream is None:
             try:
@@ -36,13 +37,15 @@ class VideoStreamer(octoprint.plugin.SettingsPlugin):
                 self.stream_enabled = False
                 self.plugin._logger.info("PrintWatch stream failed to open [{}]".format(self.plugin._settings.get(["stream_url"])))
 
+                
+    @profile            
     def kill_service(self):
         self.stream_enabled =False
         self.queue = None
         self.stream = None
         self.plugin._logger.info("PrintWatch stream closed")
 
-
+    @profile
     def _frame_queue(self):
         self.plugin._logger.info("PrintWatch stream starting...")
         while self.stream_enabled and self.plugin._settings.get(["enable_detector"]):
