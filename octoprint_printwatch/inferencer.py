@@ -1,5 +1,6 @@
 from threading import Thread
 from time import time, sleep
+import sys
 
 class Inferencer():
     def __init__(self, plugin):
@@ -20,6 +21,7 @@ class Inferencer():
 
         while len(self.circular_buffer) > int(self.plugin._settings.get(["buffer_length"])):
             self.circular_buffer.pop(0)
+        self.buffer_memory_size = sys.getsizeof(self.circular_buffer)
 
     def _attempt_pause(self):
         self.plugin._printer.pause_print()
@@ -30,6 +32,7 @@ class Inferencer():
         self.plugin._logger.info("PrintWatch Inference Loop starting...")
         while self.run_thread and self.plugin._settings.get(["enable_detector"]):
             sleep(0.1) #prevent cpu overload
+            self.inference_loop_size = sys.getsizeof(self.inference_loop)
             if self.plugin._printer.is_printing() and not self.triggered:
                 if time() - self.plugin.comm_manager.parameters['last_t'] > self.REQUEST_INTERVAL:
                     if self.plugin.streamer.jpg is not None:
