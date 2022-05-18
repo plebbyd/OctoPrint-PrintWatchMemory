@@ -1,7 +1,7 @@
 from threading import Thread
 from time import time, sleep
 import sys
-from memory_profiler import profiler
+from memory_profiler import profile
 
 class Inferencer():
     @profile
