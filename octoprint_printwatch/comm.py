@@ -12,11 +12,13 @@ import PIL.Image as Image
 from PIL import ImageDraw
 import re
 import sys
+from memory_profiler import profiler
 
 
 DEFAULT_ROUTE = 'http://printwatch-printpal.pythonanywhere.com'
 
 class CommManager(octoprint.plugin.SettingsPlugin):
+    @profile
     def __init__(self, plugin):
         self.plugin = plugin
         self.heartbeat_interval = 30.0
@@ -29,7 +31,7 @@ class CommManager(octoprint.plugin.SettingsPlugin):
                             'bad_responses' : 0
                             }
 
-
+    @profile
     def _heartbeat(self):
         while self.plugin._settings.get(["enable_detector"]) and self.heartbeat:
             sleep(0.1) #prevent cpu overload
@@ -44,7 +46,7 @@ class CommManager(octoprint.plugin.SettingsPlugin):
         self.plugin._logger.info("Heartbeat loop closed")
 
 
-
+    @profile
     def _create_payload(self, image=None):
         settings = self.plugin._settings.get([])
         if not "confidence" in settings:
@@ -58,7 +60,7 @@ class CommManager(octoprint.plugin.SettingsPlugin):
                             'state' : self.plugin._printer.get_state_id()
                             }).encode('utf8')
 
-
+    @profile
     def _send(self, heartbeat=False):
         if heartbeat:
             data = self._create_payload()
@@ -72,7 +74,7 @@ class CommManager(octoprint.plugin.SettingsPlugin):
         )
 
         return loads(urlopen(inference_request).read())
-
+    @profile
     def _check_action(self, response):
         if response['actionType'] == 'pause':
             while not ((self.plugin._printer.is_pausing() and self.plugin._printer.is_printing()) or self.plugin._printer.is_paused()):
@@ -84,7 +86,7 @@ class CommManager(octoprint.plugin.SettingsPlugin):
             if self.plugin._printer.is_paused():
                 while not self.plugin._printer.is_printing():
                     self.plugin._printer.resume_print()
-
+    @profile
     def start_service(self):
         self.heartbeat = True
         if self.plugin._settings.get(["enable_detector"]):
@@ -93,12 +95,12 @@ class CommManager(octoprint.plugin.SettingsPlugin):
                 self.heartbeat_loop.daemon = True
                 self.heartbeat_loop.start()
                 self.plugin._logger.info("PrintWatch heartbeat service started")
-
+    @profile
     def kill_service(self):
         self.heartbeat = False
         self.heartbeat_loop = None
         self.plugin._logger.info("PrintWatch heartbeat service terminated")
-
+    @profile
     def send_request(self):
         with Lock():
             self.image = bytearray(self.plugin.streamer.jpg)
@@ -130,7 +132,7 @@ class CommManager(octoprint.plugin.SettingsPlugin):
             self.parameters['bad_responses'] += 1
             self.plugin.inferencer.pred = False
             self.parameters['last_t'] = time()
-
+    @profile
     def draw_boxes(self, boxes):
         pil_img = Image.open(io.BytesIO(self.image))
         process_image = ImageDraw.Draw(pil_img)
@@ -148,7 +150,7 @@ class CommManager(octoprint.plugin.SettingsPlugin):
         pil_img.save(out_img, format='PNG')
         contents = b64encode(out_img.getvalue()).decode('utf8')
         return 'data:image/png;charset=utf-8;base64,' + contents.split('\n')[0]
-
+    @profile
     def email_notification(self):
         if self.plugin._settings.get(["enable_email_notification"]):
             self.parameters['nms'] = True
