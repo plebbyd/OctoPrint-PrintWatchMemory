@@ -12,7 +12,7 @@ import PIL.Image as Image
 from PIL import ImageDraw
 import re
 import sys
-from memory_profiler import profiler
+from memory_profiler import profile
 
 
 DEFAULT_ROUTE = 'http://printwatch-printpal.pythonanywhere.com'
