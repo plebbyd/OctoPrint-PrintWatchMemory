@@ -3,7 +3,6 @@ from threading import Thread
 from urllib.request import urlopen
 import ssl
 from time import sleep
-import sys
 
 CTX = ssl.create_default_context()
 CTX.check_hostname = False
@@ -22,6 +21,7 @@ class VideoStreamer(octoprint.plugin.SettingsPlugin):
         self.queue = None
         self.jpg = None
 
+
     def start_service(self):
         if self.stream is None:
             try:
@@ -35,12 +35,12 @@ class VideoStreamer(octoprint.plugin.SettingsPlugin):
                 self.stream_enabled = False
                 self.plugin._logger.info("PrintWatch stream failed to open [{}]".format(self.plugin._settings.get(["stream_url"])))
 
-        
     def kill_service(self):
         self.stream_enabled =False
         self.queue = None
         self.stream = None
         self.plugin._logger.info("PrintWatch stream closed")
+
 
     def _frame_queue(self):
         self.plugin._logger.info("PrintWatch stream starting...")
@@ -50,10 +50,6 @@ class VideoStreamer(octoprint.plugin.SettingsPlugin):
                 self.bytes += self.stream.read(262144)
                 self.b = self.bytes.rfind(b'\xff\xd9')
                 self.a = self.bytes.rfind(b'\xff\xd8', 0, self.b)
-                self.bytes_size = sys.getsizeof(self.bytes)
-                self.jpg_size = sys.getsizeof(self.jpg)
-                self.stream_size = sys.getsizeof(self.stream)
-                self.queue_size = sys.getsizeof(self.queue)
                 if self.a != -1 and self.b != -1:
                     self.jpg = self.bytes[self.a:self.b+2]
                     self.bytes = self.bytes[self.b+2:]

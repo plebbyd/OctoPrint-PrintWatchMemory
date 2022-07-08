@@ -18,7 +18,6 @@ class PrintWatchPlugin(octoprint.plugin.StartupPlugin,
 
     def on_after_startup(self):
         self._logger.info("Loading PrintWatch...")
-        self._logger.info("Memory Leakage Test Build 0.0.1")
         self.comm_manager = CommManager(self)
         self.streamer = VideoStreamer(self)
         self.inferencer = Inferencer(self)

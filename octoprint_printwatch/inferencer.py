@@ -1,7 +1,5 @@
 from threading import Thread
 from time import time, sleep
-import sys
-
 
 class Inferencer():
     def __init__(self, plugin):
@@ -13,6 +11,7 @@ class Inferencer():
         self.REQUEST_INTERVAL = 10.0
         self.inference_loop = None
 
+
     def _buffer_check(self):
         if self.pred:
             self.circular_buffer.append([True, time()])
@@ -21,7 +20,6 @@ class Inferencer():
 
         while len(self.circular_buffer) > int(self.plugin._settings.get(["buffer_length"])):
             self.circular_buffer.pop(0)
-        self.buffer_memory_size = sys.getsizeof(self.circular_buffer)
 
     def _attempt_pause(self):
         self.plugin._printer.pause_print()
@@ -32,7 +30,6 @@ class Inferencer():
         self.plugin._logger.info("PrintWatch Inference Loop starting...")
         while self.run_thread and self.plugin._settings.get(["enable_detector"]):
             sleep(0.1) #prevent cpu overload
-            self.inference_loop_size = sys.getsizeof(self.inference_loop)
             if self.plugin._printer.is_printing() and not self.triggered:
                 if time() - self.plugin.comm_manager.parameters['last_t'] > self.REQUEST_INTERVAL:
                     if self.plugin.streamer.jpg is not None:
@@ -45,13 +42,8 @@ class Inferencer():
                                 if pause_condition:
                                     self.plugin._logger.info("Failure Detected. Pausing Print.")
                                     self._attempt_pause()
-                    try:
-                        self.comm_mgr_size = sys.getsizeof(self.plugin.comm_manager)
-                        self.streamer_mem_size = sys.getsizeof(self.plugin.streamer)
-                        self.inferencer_mem_size = sys.getsizeof(self.plugin.inferencer)
-                        self.plugin._logger.info("Memory Usages: | Inferencer buffer: {} | Inferencer loop: {} | Streamer bytes: {} | Streamer jpg: {} | Streamer stream: {} | Streamer Queue: {} | Comm image: {} | Comm prms: {} | Comm Pred: {} | Inferencer size: {} | Streamer size: {} | Comm Mgr size: {}".format(self.buffer_memory_size, self.inference_loop_size, self.plugin.streamer.bytes_size, self.plugin.streamer.jpg_size, self.plugin.streamer.stream_size, self.plugin.streamer.queue_size, self.plugin.comm_manager.image_memory_size, self.plugin.comm_manager.parameters_size, self.plugin.comm_manager.pred_size, self.inferencer_mem_size, self.streamer_mem_size, self.comm_mgr_size))
-                    except Exception as e:
-                        self.plugin._logger.info("Exception in displaying memories: {}".format(str(e)))
+
+
                 if self.plugin.comm_manager.parameters['bad_responses'] >= int(self.plugin._settings.get(["buffer_length"])):
                     self.plugin._logger.info("Too many bad response from server. Disabling PrintWatch monitoring")
                     self.plugin.streamer.kill_service()

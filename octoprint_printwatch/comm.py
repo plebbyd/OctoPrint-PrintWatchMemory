@@ -11,8 +11,6 @@ import io
 import PIL.Image as Image
 from PIL import ImageDraw
 import re
-import sys
-
 
 
 DEFAULT_ROUTE = 'http://printwatch-printpal.pythonanywhere.com'
@@ -103,14 +101,11 @@ class CommManager(octoprint.plugin.SettingsPlugin):
     def send_request(self):
         with Lock():
             self.image = bytearray(self.plugin.streamer.jpg)
-        self.image_memory_size = sys.getsizeof(self.image)
         try:
             response = self._send()
             self.parameters['last_t'] = time()
-            self.parameters_size = sys.getsizeof(self.parameters)
             if response['statusCode'] == 200:
                 self.plugin.inferencer.pred = eval(response['defect_detected'])
-                self.pred_size = sys.getsizeof(self.plugin.inferencer.pred)
                 self.parameters['bad_responses'] = 0
                 self.plugin.inferencer.REQUEST_INTERVAL = 10.0
                 boxes = eval(re.sub('\s+', ',', re.sub('\s+\]', ']', re.sub('\[\s+', '[', response['boxes'].replace('\n','')))))
